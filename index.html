@@ -286,6 +286,21 @@ async function initApp() {
     else driversCache = dSnap.docs.map(d=>d.data());
     const iSnap = await getDocs(query(collection(db,'incidencias'),orderBy('fecha','desc')));
     incidenciasCache = iSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+    // Si no hay incidencias, cargar simulacro de prueba
+    if (incidenciasCache.length === 0) {
+      const sim = [
+        {driverCode:'3035',driverName:'AGUSTIN CUESTA GUTIERREZ',matricula:'3402-NMD',descripcion:'El camión hace un ruido extraño al frenar, parece que son los frenos traseros.',urgencia:'Urgente',estado:'Pendiente',fecha:'2025-06-10T07:30:00',fechaStr:'10/06/2025',horaStr:'07:30'},
+        {driverCode:'3008',driverName:'ALBERTO BRIÑAS LOPEZ',matricula:'5271-KZT',descripcion:'La luz del salpicadero indica que falta aceite. Revisarlo antes de salir.',urgencia:'Normal',estado:'En reparación',fecha:'2025-06-11T09:15:00',fechaStr:'11/06/2025',horaStr:'09:15'},
+        {driverCode:'3010',driverName:'CRISTIAN SANCHEZ CONSUEGRA',matricula:'TOROS CESAB',descripcion:'La carretilla no eleva bien la carga, parece que falla el sistema hidráulico.',urgencia:'Urgente',estado:'Pendiente',fecha:'2025-06-12T08:00:00',fechaStr:'12/06/2025',horaStr:'08:00'},
+        {driverCode:'3004',driverName:'JUAN DE DIOS DIAZ OLIVER',matricula:'0608-KFG',descripcion:'Neumático trasero derecho con poca presión, necesita revisión.',urgencia:'Normal',estado:'Resuelto',fecha:'2025-06-09T14:30:00',fechaStr:'09/06/2025',horaStr:'14:30'},
+        {driverCode:'3007',driverName:'FERNANDO DIAZ ASTILLEROS',matricula:'8343-LXM',descripcion:'El aire acondicionado no funciona.',urgencia:'Normal',estado:'Pendiente',fecha:'2025-06-13T11:00:00',fechaStr:'13/06/2025',horaStr:'11:00'},
+      ];
+      for (const inc of sim) {
+        const ref = await addDoc(collection(db,'incidencias'), inc);
+        incidenciasCache.unshift({id:ref.id,...inc});
+      }
+    }
     const mSnap = await getDocs(collection(db,'mantenimiento'));
     mantenimientoCache = mSnap.docs.map(d=>({id:d.id,...d.data()}));
     clearTimeout(t1); clearTimeout(t2);
