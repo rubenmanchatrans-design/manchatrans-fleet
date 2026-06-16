@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a2332">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fleet">
+<link rel="manifest" href="manifest-fleet.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/manchatrans-fleet/sw.js');
+  }
+</script>
+<title>Manchatrans Fleet</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #1a2332; --navy-light: #2e3d56;
+  --accent: #f5a623; --text: #f0f4f8; --text-muted: #8fa3bc;
+  --bg: #111820; --card: #1e2b3c; --card-border: #2a3d55;
+  --success: #2ecc71; --danger: #e74c3c; --input-bg: #162030;
+  --warning: #f0a030; --radius: 12px; --radius-sm: 8px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 16px; }
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+#screen-login { align-items: center; justify-content: center; padding: 2rem 1.5rem; background: radial-gradient(ellipse at 50% 0%, #243044 0%, var(--bg) 70%); }
+.login-logo { margin-bottom: 1rem; text-align:center; }
+.login-company { font-size: 13px; color: var(--accent); font-weight: 600; text-align: center; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+.login-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 0.25rem; }
+.login-sub { font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 2.5rem; }
+.login-card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 2rem 1.5rem; width: 100%; max-width: 360px; }
+.form-label { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 0.5rem; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+.form-input { width: 100%; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: var(--radius-sm); color: var(--text); font-size: 16px; padding: 0.75rem 1rem; outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
+.form-input:focus { border-color: var(--accent); }
+.form-group { margin-bottom: 1.25rem; }
+.btn { width: 100%; padding: 0.9rem; border-radius: var(--radius-sm); border: none; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.btn:active { transform: scale(0.98); opacity: 0.85; }
+.btn-primary { background: var(--accent); color: #111; }
+.btn-secondary { background: var(--navy-light); color: var(--text); }
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--card-border); }
+.error-msg { color: var(--danger); font-size: 13px; margin-top: 0.75rem; text-align: center; min-height: 20px; }
+.topbar { background: var(--navy); border-bottom: 1px solid var(--card-border); padding: 0.9rem 1.25rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.topbar-title { font-size: 16px; font-weight: 600; }
+.topbar-user { font-size: 13px; color: var(--accent); font-weight: 500; }
+.topbar-logout { font-size: 13px; color: var(--text-muted); cursor: pointer; background: none; border: none; padding: 4px 8px; }
+.body-content { flex: 1; padding: 1.25rem; overflow-y: auto; }
+.section-title { font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
+.card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.tabs { display: flex; background: var(--navy); border-top: 1px solid var(--card-border); position: sticky; bottom: 0; }
+.tab-btn { flex: 1; padding: 0.85rem 0.5rem; border: none; background: none; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: color 0.15s; }
+.tab-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+.tab-btn.active { color: var(--accent); }
+.atab-btn { flex:1; padding:0.6rem; font-size:11px; }
+.alert { background: #1e3a1e; border: 1px solid #2a5a2a; color: #6dbf6d; border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 14px; text-align: center; margin-bottom: 1rem; display: none; }
+.alert.show { display: block; }
+.alert.error { background: #3a1e1e; border-color: #5a2a2a; color: #df6d6d; }
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 14px; }
+.empty-icon { font-size: 40px; margin-bottom: 0.75rem; }
+textarea.form-input { resize: vertical; min-height: 90px; }
+.badge { display: inline-block; background: var(--navy-light); border-radius: 20px; padding: 2px 10px; font-size: 12px; color: var(--text-muted); }
+.record { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 0.75rem; }
+.record-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.record-meta { font-size: 12px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 8px; }
+.estado-badge { padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.estado-pendiente { background: #3a2e1e; color: var(--warning); }
+.estado-reparacion { background: #1e2e3a; color: var(--accent); }
+.estado-resuelto { background: #1e3a1e; color: var(--success); }
+.mant-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--card-border); font-size: 13px; }
+.mant-row:last-child { border-bottom: none; }
+.alerta-mant { border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 0.5rem; font-size: 13px; font-weight: 500; }
+.loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 1rem; }
+.spinner { width: 40px; height: 40px; border: 3px solid var(--card-border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-sm { padding: 4px 10px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; border: 1px solid var(--card-border); background: var(--navy-light); color: var(--text); }
+.btn-sm-danger { border-color: var(--danger); color: var(--danger); background: none; }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading-overlay">
+  <div style="font-size:42px">🚛</div>
+  <div class="spinner" id="loading-spinner"></div>
+  <div style="font-size:14px;color:var(--text-muted);" id="loading-msg">Conectando...</div>
+  <button id="btn-retry" class="btn btn-primary" style="display:none;max-width:200px;" onclick="location.reload()">🔄 Reintentar</button>
+</div>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen">
+  <div class="login-logo"><div style="font-size:48px">🚛</div></div>
+  <div class="login-company">MANCHATRANS S.L.</div>
+  <div class="login-title">Fleet Manager</div>
+  <div class="login-sub">Incidencias y Mantenimiento</div>
+  <div class="login-card"></div>
+  <div style="margin-top:2rem;font-size:13px;color:var(--text-muted);text-align:center;opacity:0.8;">Diseñada por <span style="color:var(--accent);font-weight:600;">Rubén Díaz</span></div>
+</div>
+
+<!-- CONDUCTOR -->
+<div id="screen-driver" class="screen">
+  <div class="topbar">
+    <span class="topbar-title">🚛 Fleet Manager</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="topbar-user" id="driver-name-display"></span>
+      <button class="topbar-logout" id="btn-logout-driver">Salir</button>
+    </div>
+  </div>
+  <div class="body-content">
+
+    <!-- TAB: Nueva incidencia -->
+    <div id="tab-nueva-inc" class="tab-pane active">
+      <div class="section-title">Nueva incidencia / avería</div>
+      <div id="inc-alert" class="alert"></div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Vehículo <span style="color:var(--danger)">*</span></label>
+          <select class="form-input" id="inc-matricula">
+            <option value="">— Selecciona vehículo —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción del problema <span style="color:var(--danger)">*</span></label>
+          <textarea class="form-input" id="inc-desc" placeholder="Describe la avería o incidencia con el máximo detalle posible..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Urgencia</label>
+          <select class="form-input" id="inc-urgencia">
+            <option value="Normal">Normal</option>
+            <option value="Urgente">🔴 Urgente</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="btn-enviar-inc">Enviar incidencia</button>
+      </div>
+    </div>
+
+    <!-- TAB: Mis incidencias -->
+    <div id="tab-mis-inc" class="tab-pane">
+      <div class="section-title">Mis incidencias</div>
+      <div id="driver-inc-list"></div>
+    </div>
+
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" id="tbtn-nueva-inc">
+      <svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      Nueva
+    </button>
+    <button class="tab-btn" id="tbtn-mis-inc">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 4v6M16 4v6"/></svg>
+      Mis incidencias
+    </button>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="screen-admin" class="screen">
+  <div class="topbar">
+    <span class="topbar-title">🚛 Fleet Admin</span>
+    <button class="topbar-logout" id="btn-logout-admin">Salir</button>
+  </div>
+  <div class="body-content">
+    <div style="display:flex;gap:0.4rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+      <button class="btn btn-secondary atab-btn" id="atab-btn-incidencias">Incidencias</button>
+      <button class="btn btn-ghost atab-btn" id="atab-btn-mantenimiento">Mantenimiento</button>
+      <button class="btn btn-ghost atab-btn" id="atab-btn-conductores">Conductores</button>
+    </div>
+
+    <!-- INCIDENCIAS ADMIN -->
+    <div id="atab-incidencias" class="tab-pane active">
+      <div class="section-title">Todas las incidencias</div>
+      <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <button class="btn btn-ghost" style="flex:1;padding:0.5rem;font-size:12px;" id="filter-todas" onclick="filtrarInc('todas')">Todas</button>
+        <button class="btn btn-ghost" style="flex:1;padding:0.5rem;font-size:12px;" id="filter-pendiente" onclick="filtrarInc('Pendiente')">Pendientes</button>
+        <button class="btn btn-ghost" style="flex:1;padding:0.5rem;font-size:12px;" id="filter-reparacion" onclick="filtrarInc('En reparación')">En reparación</button>
+        <button class="btn btn-ghost" style="flex:1;padding:0.5rem;font-size:12px;" id="filter-resuelto" onclick="filtrarInc('Resuelto')">Resueltas</button>
+      </div>
+      <div id="admin-inc-list"></div>
+    </div>
+
+    <!-- MANTENIMIENTO -->
+    <div id="atab-mantenimiento" class="tab-pane">
+      <div class="section-title">Revisiones por vehículo</div>
+      <div id="mant-alertas"></div>
+      <div id="mant-list"></div>
+    </div>
+
+    <!-- CONDUCTORES -->
+    <div id="atab-conductores" class="tab-pane">
+      <div id="cond-alert" class="alert"></div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="section-title">Añadir conductor</div>
+        <div class="form-group">
+          <label class="form-label">Nombre completo</label>
+          <input class="form-input" type="text" id="new-driver-name" placeholder="Nombre completo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Código de acceso</label>
+          <input class="form-input" type="text" id="new-driver-code" placeholder="Ej: 3062" autocomplete="off">
+        </div>
+        <button class="btn btn-primary" id="btn-add-driver">Añadir conductor</button>
+      </div>
+      <div class="section-title">Conductores activos (<span id="driver-count">0</span>)</div>
+      <div id="driver-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, doc, getDocs, addDoc, setDoc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDsyKlniyo6eekC7SdWA_bzeTAaDFn03-w",
+  authDomain: "manchatrans-fleet.firebaseapp.com",
+  projectId: "manchatrans-fleet",
+  storageBucket: "manchatrans-fleet.firebasestorage.app",
+  messagingSenderId: "605753143630",
+  appId: "1:605753143630:web:b02d5f0b83e2b77e022e1f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ══════════════════════════════
+// CONSTANTES
+// ══════════════════════════════
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'admin2026';
+const DIAS_AVISO = 20;
+const REVISIONES = ['ITV','Seguro','Aceite','Neumáticos'];
+
+const MATRICULAS = [
+  '0044-HBJ','0328-MMR','0390-LWZ','0608-KFG','0620-MPR','0633-NGH',
+  '0724-KFG','1789-LZR','1931-CWD','1979-LMH','3257-LGZ','3299-MZB',
+  '3341-GZJ','3402-NMD','3570-MWX','3817-BBW','3911-KZK','4324-MDJ',
+  '4470-MLB','4870-CZR','4953-CYB','5039-MSZ','5167-BHZ','5271-KZT',
+  '5343-NFD','6319-LKW','6354-LKW','6492-MMP','7062-NJL','7179-FVM',
+  '7511-FWW','7651-MHP','7999-KXZ','8182-MFM','8343-LXM','5340-CWZ',
+  '8918-LSR','8929-MXW','9233-DVZ','CR-9637-X','TOROS CESAB'
+];
+
+const DEFAULT_DRIVERS = [
+  {code:'3035',name:'AGUSTIN CUESTA GUTIERREZ'},{code:'3008',name:'ALBERTO BRIÑAS LOPEZ'},
+  {code:'3028',name:'ALEXIS MENDIETA AGUILERA'},{code:'3041',name:'ANGEL PATRICIO ORTEGA DE LA CRUZ'},
+  {code:'3042',name:'CARLOS MUÑOZ PAVON'},{code:'3010',name:'CRISTIAN SANCHEZ CONSUEGRA'},
+  {code:'3003',name:'CRISTOBAL MARQUEZ FLORES'},{code:'3054',name:'DAVID DOMINGUEZ HERRERA'},
+  {code:'3033',name:'DIONISIO ROBLES ROBLES'},{code:'3030',name:'EDISON XAVIER ORTEGA MONTALEZA'},
+  {code:'3018',name:'ENRIQUE JAVIER RUIZ ARENAS'},{code:'3007',name:'FERNANDO DIAZ ASTILLEROS'},
+  {code:'3025',name:'FELIX JIMENEZ JIMENEZ'},{code:'3058',name:'FRANCISCO CALZADO COLETO'},
+  {code:'3057',name:'FRANCISCO RODRIGO CUEVA'},{code:'3043',name:'ISMAEL AMO GARCIA'},
+  {code:'3026',name:'JAVIER DELGADO RODRIGO'},{code:'3055',name:'JAVIER VALDELOMAR LOPEZ DEL PRADO'},
+  {code:'3014',name:'JOSE DONATE NARANJO'},{code:'3009',name:'JOSE A. FERNANDEZ MONTERO'},
+  {code:'3027',name:'JOSE JAVIER ROBLEDO LOPEZ'},{code:'3011',name:'JOSE MANUEL DE LA FUENTE'},
+  {code:'3052',name:'JOSE MUÑOZ FRAGOSO'},{code:'3061',name:'JUAN ANTONIO PINEÑO GOMEZ'},
+  {code:'3004',name:'JUAN DE DIOS DIAZ OLIVER'},{code:'3024',name:'LUIS JESUS DIAZ OLIVER'},
+  {code:'3002',name:'MAXIMO RODRIGUEZ REINA'},{code:'3012',name:'MIGUEL PAZ ALCAIDE'},
+  {code:'3032',name:'ROBERTO DE LA FUENTE LOPEZ'},{code:'3019',name:'ROBERTO RODRIGUEZ RODRIGUEZ'},
+  {code:'3034',name:'RUBEN PESQUERA CESPEDES'},{code:'3016',name:'SANTIAGO RAEZ MADRID'},
+  {code:'3006',name:'SANTOS DIAZ ASTILLEROS'},{code:'3021',name:'SERGIO ANGULO SANCHEZ'},
+  {code:'3029',name:'VALENTIN LIGERO DIAZ-PAVON'},{code:'3015',name:'VICENTE CANO GARCIA'},
+  {code:'3005',name:'VICENTE DIAZ ASTILLEROS'},{code:'3039',name:'VICTOR PASCUAL SANTIAGO'}
+];
+
+let currentUser = null;
+let loginMode = 'driver';
+let driversCache = [];
+let incidenciasCache = [];
+let mantenimientoCache = [];
+let filtroActivo = 'todas';
+
+// ══════════════════════════════
+// INIT
+// ══════════════════════════════
+async function initApp() {
+  const t1 = setTimeout(()=>{ document.getElementById('loading-msg').textContent='Tardando más de lo normal...'; document.getElementById('loading-msg').style.color='#f0a030'; }, 2000);
+  const t2 = setTimeout(()=>{ document.getElementById('loading-msg').textContent='Sin conexión. Recargando...'; document.getElementById('loading-msg').style.color='var(--danger)'; setTimeout(()=>location.reload(),1500); }, 8000);
+  try {
+    const dSnap = await getDocs(collection(db,'conductores'));
+    if (dSnap.empty) { for (const d of DEFAULT_DRIVERS) await setDoc(doc(db,'conductores',d.code),d); driversCache=[...DEFAULT_DRIVERS]; }
+    else driversCache = dSnap.docs.map(d=>d.data());
+    const iSnap = await getDocs(query(collection(db,'incidencias'),orderBy('fecha','desc')));
+    incidenciasCache = iSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const mSnap = await getDocs(collection(db,'mantenimiento'));
+    mantenimientoCache = mSnap.docs.map(d=>({id:d.id,...d.data()}));
+    clearTimeout(t1); clearTimeout(t2);
+  } catch(e) {
+    clearTimeout(t1); clearTimeout(t2);
+    document.getElementById('loading-msg').textContent='Error de conexión. Recargando...';
+    document.getElementById('loading-msg').style.color='var(--danger)';
+    setTimeout(()=>location.reload(),2000); return;
+  }
+  document.getElementById('loading-overlay').style.display='none';
+  buildLoginForm(); showScreen('login');
+
+  // Event listeners
+  document.getElementById('btn-logout-driver').addEventListener('click', doLogout);
+  document.getElementById('btn-logout-admin').addEventListener('click', doLogout);
+  document.getElementById('tbtn-nueva-inc').addEventListener('click', ()=>switchDriverTab('nueva-inc'));
+  document.getElementById('tbtn-mis-inc').addEventListener('click', ()=>switchDriverTab('mis-inc'));
+  document.getElementById('btn-enviar-inc').addEventListener('click', submitIncidencia);
+  document.getElementById('atab-btn-incidencias').addEventListener('click', ()=>switchAdminTab('incidencias'));
+  document.getElementById('atab-btn-mantenimiento').addEventListener('click', ()=>switchAdminTab('mantenimiento'));
+  document.getElementById('atab-btn-conductores').addEventListener('click', ()=>switchAdminTab('conductores'));
+  document.getElementById('btn-add-driver').addEventListener('click', addDriver);
+}
+
+// ══════════════════════════════
+// LOGIN
+// ══════════════════════════════
+function buildLoginForm() {
+  const card = document.querySelector('.login-card');
+  if (loginMode==='driver') {
+    card.innerHTML=`
+      <div class="form-group"><label class="form-label">Código de acceso</label>
+      <input class="form-input" type="text" id="login-code" placeholder="••••••" autocomplete="off" inputmode="numeric" style="-webkit-text-security:disc;"></div>
+      <button class="btn btn-primary" id="btn-login">Entrar</button>
+      <div style="text-align:center;margin-top:1rem;"><span style="font-size:13px;color:var(--text-muted);cursor:pointer;" id="link-admin">Acceso administrador</span></div>
+      <div class="error-msg" id="login-error"></div>`;
+    setTimeout(()=>{
+      const el=document.getElementById('login-code');
+      if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+      document.getElementById('btn-login').addEventListener('click',doLogin);
+      document.getElementById('link-admin').addEventListener('click',toggleLoginMode);
+    },50);
+  } else {
+    card.innerHTML=`
+      <div class="form-group"><label class="form-label">Usuario</label><input class="form-input" type="text" id="admin-user" placeholder="admin" autocomplete="off"></div>
+      <div class="form-group"><label class="form-label">Contraseña</label><input class="form-input" type="password" id="admin-pass" placeholder="••••••" autocomplete="off"></div>
+      <button class="btn btn-primary" id="btn-login-admin">Entrar como admin</button>
+      <div style="text-align:center;margin-top:1rem;"><span style="font-size:13px;color:var(--text-muted);cursor:pointer;" id="link-driver">← Acceso conductores</span></div>
+      <div class="error-msg" id="login-error"></div>`;
+    setTimeout(()=>{
+      document.getElementById('btn-login-admin').addEventListener('click',doLogin);
+      document.getElementById('link-driver').addEventListener('click',toggleLoginMode);
+      document.getElementById('admin-user').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+      document.getElementById('admin-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+    },50);
+  }
+}
+
+function toggleLoginMode() { loginMode=loginMode==='driver'?'admin':'driver'; buildLoginForm(); }
+
+function doLogin() {
+  const err=document.getElementById('login-error');
+  if (loginMode==='admin') {
+    const u=(document.getElementById('admin-user').value||'').trim().toLowerCase();
+    const p=(document.getElementById('admin-pass').value||'').trim();
+    if (u===ADMIN_USER&&p===ADMIN_PASS) { currentUser={name:'Administrador',isAdmin:true}; showScreen('admin'); renderAdminPage(); return; }
+    err.textContent='Usuario o contraseña incorrectos'; return;
+  }
+  const code=(document.getElementById('login-code').value||'').trim();
+  if (!code) { err.textContent='Introduce tu código'; return; }
+  const driver=driversCache.find(d=>d.code===code);
+  if (driver) {
+    currentUser={name:driver.name,code:driver.code,isAdmin:false};
+    document.getElementById('driver-name-display').textContent=driver.name.split(' ').slice(0,2).join(' ');
+    showScreen('driver');
+    populateIncMatriculas();
+    switchDriverTab('nueva-inc');
+  } else { err.textContent='Código incorrecto. Contacta con tu jefe.'; }
+}
+
+function doLogout() { location.reload(); }
+function showScreen(name) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-'+name).classList.add('active'); }
+
+// ══════════════════════════════
+// CONDUCTOR — INCIDENCIAS
+// ══════════════════════════════
+function populateIncMatriculas() {
+  const sel=document.getElementById('inc-matricula');
+  sel.innerHTML='<option value="">— Selecciona vehículo —</option>';
+  // Matrículas personalizadas por conductor
+  if (currentUser.code==='3006') { sel.innerHTML+='<option value="8182-MFM">8182-MFM (vehículo propio)</option>'; return; }
+  if (currentUser.code==='3007') { sel.innerHTML+='<option value="8343-LXM">8343-LXM (vehículo propio)</option><option value="5340-CWZ">5340-CWZ (vehículo propio)</option>'; return; }
+  MATRICULAS.forEach(m=>{ sel.innerHTML+=`<option value="${m}">${m}</option>`; });
+}
+
+function switchDriverTab(tab) {
+  document.querySelectorAll('#screen-driver .tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#screen-driver .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('tbtn-'+tab).classList.add('active');
+  if (tab==='mis-inc') renderDriverIncidencias();
+}
+
+async function submitIncidencia() {
+  const mat=document.getElementById('inc-matricula').value;
+  const desc=document.getElementById('inc-desc').value.trim();
+  const urgencia=document.getElementById('inc-urgencia').value;
+  const al=document.getElementById('inc-alert');
+  if (!mat) { showAlert(al,'⚠️ Selecciona el vehículo',true); return; }
+  if (!desc) { showAlert(al,'⚠️ Describe el problema',true); return; }
+  const now=new Date();
+  const inc={ driverCode:currentUser.code, driverName:currentUser.name, matricula:mat, descripcion:desc, urgencia, estado:'Pendiente', fecha:now.toISOString(), fechaStr:now.toLocaleDateString('es-ES'), horaStr:now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) };
+  try {
+    const ref=await addDoc(collection(db,'incidencias'),inc);
+    incidenciasCache.unshift({id:ref.id,...inc});
+    document.getElementById('inc-matricula').value='';
+    document.getElementById('inc-desc').value='';
+    document.getElementById('inc-urgencia').value='Normal';
+    showAlert(al,'✓ Incidencia enviada correctamente',false);
+  } catch(e) { showAlert(al,'Error al enviar: '+e.message,true); }
+}
+
+function renderDriverIncidencias() {
+  const list=document.getElementById('driver-inc-list');
+  const mias=incidenciasCache.filter(i=>i.driverCode===currentUser.code);
+  if (!mias.length) { list.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div>No tienes incidencias registradas</div>'; return; }
+  list.innerHTML=mias.map(i=>`
+    <div class="record">
+      <div class="record-top">
+        <div style="font-weight:600;">🚗 ${i.matricula} ${i.urgencia==='Urgente'?'<span style="color:var(--danger);font-size:12px;">🔴 URGENTE</span>':''}</div>
+        <span class="estado-badge estado-${i.estado==='Pendiente'?'pendiente':i.estado==='En reparación'?'reparacion':'resuelto'}">${i.estado}</span>
+      </div>
+      <div style="font-size:14px;margin-bottom:0.25rem;">${i.descripcion}</div>
+      <div class="record-meta"><span>📅 ${i.fechaStr} ${i.horaStr}</span></div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════
+// ADMIN
+// ══════════════════════════════
+function renderAdminPage() { renderIncidenciasAdmin(); renderMantenimiento(); renderDriverList(); updateTabBadges(); }
+
+function switchAdminTab(tab) {
+  document.querySelectorAll('#screen-admin .tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('atab-'+tab).classList.add('active');
+  ['incidencias','mantenimiento','conductores'].forEach(t=>{ document.getElementById('atab-btn-'+t).className='btn atab-btn '+(t===tab?'btn-secondary':'btn-ghost'); });
+  if (tab==='incidencias') renderIncidenciasAdmin();
+  if (tab==='mantenimiento') renderMantenimiento();
+  if (tab==='conductores') renderDriverList();
+}
+
+function updateTabBadges() {
+  const pendientes=incidenciasCache.filter(i=>i.estado==='Pendiente').length;
+  document.getElementById('atab-btn-incidencias').textContent=pendientes>0?`Incidencias 🔴${pendientes}`:'Incidencias';
+  const hoy=new Date(); let alertas=0;
+  mantenimientoCache.forEach(m=>{ REVISIONES.forEach(rev=>{ const key=revKey(rev); if(m[key]){ const dias=Math.ceil((new Date(m[key])-hoy)/(1000*60*60*24)); if(dias<=DIAS_AVISO) alertas++; } }); });
+  document.getElementById('atab-btn-mantenimiento').textContent=alertas>0?`Mantenimiento 🔴${alertas}`:'Mantenimiento';
+}
+
+window.filtrarInc = (filtro) => {
+  filtroActivo=filtro;
+  ['todas','pendiente','reparacion','resuelto'].forEach(f=>{ document.getElementById('filter-'+f).className='btn btn-ghost'; document.getElementById('filter-'+f).style.cssText='flex:1;padding:0.5rem;font-size:12px;'; });
+  const btnId = filtro==='todas'?'filter-todas':filtro==='Pendiente'?'filter-pendiente':filtro==='En reparación'?'filter-reparacion':'filter-resuelto';
+  document.getElementById(btnId).className='btn btn-secondary';
+  document.getElementById(btnId).style.cssText='flex:1;padding:0.5rem;font-size:12px;';
+  renderIncidenciasAdmin();
+};
+
+function renderIncidenciasAdmin() {
+  const list=document.getElementById('admin-inc-list');
+  let f=filtroActivo==='todas'?incidenciasCache:incidenciasCache.filter(i=>i.estado===filtroActivo);
+  if (!f.length) { list.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div>No hay incidencias'+(filtroActivo!=='todas'?' con ese estado':'')+'</div>'; return; }
+  list.innerHTML=f.map(i=>`
+    <div class="record">
+      <div class="record-top">
+        <div style="font-weight:600;font-size:14px;">${i.driverName.split(' ').slice(0,2).join(' ')} <span class="badge">${i.driverCode}</span></div>
+        <span class="estado-badge estado-${i.estado==='Pendiente'?'pendiente':i.estado==='En reparación'?'reparacion':'resuelto'}">${i.estado}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:0.4rem;">🚗 ${i.matricula} · 📅 ${i.fechaStr} ${i.horaStr} ${i.urgencia==='Urgente'?'· <span style="color:var(--danger);font-weight:700;">🔴 URGENTE</span>':''}</div>
+      <div style="font-size:14px;margin-bottom:0.75rem;">${i.descripcion}</div>
+      <div style="display:flex;gap:0.4rem;">
+        <button onclick="cambiarEstado('${i.id}','Pendiente')" style="flex:1;padding:0.4rem;background:${i.estado==='Pendiente'?'var(--warning)':'var(--navy-light)'};color:${i.estado==='Pendiente'?'#111':'var(--text)'};border:1px solid var(--card-border);border-radius:var(--radius-sm);font-size:11px;cursor:pointer;">Pendiente</button>
+        <button onclick="cambiarEstado('${i.id}','En reparación')" style="flex:1;padding:0.4rem;background:${i.estado==='En reparación'?'var(--accent)':'var(--navy-light)'};color:${i.estado==='En reparación'?'#111':'var(--text)'};border:1px solid var(--card-border);border-radius:var(--radius-sm);font-size:11px;cursor:pointer;">En reparación</button>
+        <button onclick="cambiarEstado('${i.id}','Resuelto')" style="flex:1;padding:0.4rem;background:${i.estado==='Resuelto'?'var(--success)':'var(--navy-light)'};color:${i.estado==='Resuelto'?'#111':'var(--text)'};border:1px solid var(--card-border);border-radius:var(--radius-sm);font-size:11px;cursor:pointer;">Resuelto</button>
+      </div>
+    </div>`).join('');
+}
+
+window.cambiarEstado = async (id, estado) => {
+  try {
+    await updateDoc(doc(db,'incidencias',id),{estado});
+    const idx=incidenciasCache.findIndex(x=>x.id===id);
+    if(idx>=0) incidenciasCache[idx].estado=estado;
+    renderIncidenciasAdmin(); updateTabBadges();
+  } catch(e) { alert('Error: '+e.message); }
+};
+
+// ══════════════════════════════
+// MANTENIMIENTO
+// ══════════════════════════════
+function revKey(rev) { return rev.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
+function renderMantenimiento() {
+  const list=document.getElementById('mant-list');
+  const alertasEl=document.getElementById('mant-alertas');
+  const hoy=new Date();
+  let alertasHtml='';
+
+  mantenimientoCache.forEach(m=>{
+    REVISIONES.forEach(rev=>{
+      const key=revKey(rev);
+      if (!m[key]) return;
+      const fecha=new Date(m[key]);
+      const dias=Math.ceil((fecha-hoy)/(1000*60*60*24));
+      if (dias<=DIAS_AVISO) {
+        const color=dias<0?'var(--danger)':dias<=5?'#ff6b00':'var(--warning)';
+        const txt=dias<0?`Vencida hace ${Math.abs(dias)} días`:`Vence en ${dias} días`;
+        alertasHtml+=`<div style="background:#3a1e1e;border:1px solid ${color};border-radius:var(--radius-sm);padding:0.75rem 1rem;margin-bottom:0.5rem;font-size:13px;">⚠️ <strong>${m.matricula}</strong> — ${rev}: <span style="color:${color};font-weight:700;">${txt}</span> (${fecha.toLocaleDateString('es-ES')})</div>`;
+      }
+    });
+  });
+  alertasEl.innerHTML=alertasHtml?`<div style="margin-bottom:1.25rem;">${alertasHtml}</div>`:'';
+
+  list.innerHTML=MATRICULAS.map(mat=>{
+    const m=mantenimientoCache.find(x=>x.matricula===mat)||{matricula:mat};
+    return `<div class="card" style="margin-bottom:0.75rem;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:0.75rem;">🚗 ${mat}</div>
+      ${REVISIONES.map(rev=>{
+        const key=revKey(rev);
+        const fechaStr=m[key];
+        const fecha=fechaStr?new Date(fechaStr):null;
+        const dias=fecha?Math.ceil((fecha-hoy)/(1000*60*60*24)):null;
+        let color='var(--text-muted)';
+        if(dias!==null){ if(dias<0) color='var(--danger)'; else if(dias<=DIAS_AVISO) color='var(--warning)'; else color='var(--success)'; }
+        return `<div class="mant-row">
+          <span style="font-weight:500;">${rev}</span>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span style="color:${color};font-size:13px;">${fecha?fecha.toLocaleDateString('es-ES'):'Sin fecha'}</span>
+            <button class="btn-sm" onclick="editMant('${mat}','${rev}')">Editar</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+window.editMant = (mat, rev) => {
+  const m=mantenimientoCache.find(x=>x.matricula===mat)||{matricula:mat};
+  const key=revKey(rev);
+  const modal=document.createElement('div');
+  modal.id='mant-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  modal.innerHTML=`
+    <div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:380px;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:1.25rem;color:var(--accent);">🔧 ${rev} — ${mat}</div>
+      <div class="form-group"><label class="form-label">Fecha próxima revisión</label>
+      <input class="form-input" type="date" id="mant-fecha" value="${m[key]||''}"></div>
+      <div style="display:flex;gap:0.5rem;">
+        <button id="btn-save-mant" style="flex:1;padding:0.75rem;background:var(--accent);color:#111;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:700;cursor:pointer;">Guardar</button>
+        <button onclick="document.getElementById('mant-modal').remove()" style="flex:1;padding:0.75rem;background:var(--navy-light);color:var(--text);border:1px solid var(--card-border);border-radius:var(--radius-sm);font-size:15px;cursor:pointer;">Cancelar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('btn-save-mant').addEventListener('click', async ()=>{
+    const fecha=document.getElementById('mant-fecha').value;
+    if (!fecha) { alert('Selecciona una fecha'); return; }
+    try {
+      const idx=mantenimientoCache.findIndex(x=>x.matricula===mat);
+      if(idx>=0) { mantenimientoCache[idx][key]=fecha; await setDoc(doc(db,'mantenimiento',mat),mantenimientoCache[idx]); }
+      else { const nuevo={matricula:mat,[key]:fecha}; mantenimientoCache.push(nuevo); await setDoc(doc(db,'mantenimiento',mat),nuevo); }
+      document.getElementById('mant-modal').remove();
+      renderMantenimiento(); updateTabBadges();
+    } catch(e) { alert('Error: '+e.message); }
+  });
+};
+
+// ══════════════════════════════
+// CONDUCTORES
+// ══════════════════════════════
+function renderDriverList() {
+  const list=document.getElementById('driver-list');
+  document.getElementById('driver-count').textContent=driversCache.length;
+  list.innerHTML=driversCache.map(d=>`
+    <div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+      <div><div style="font-size:14px;">${d.name}</div><div style="font-size:12px;color:var(--accent);font-weight:600;margin-top:2px;">Código: ${d.code}</div></div>
+      <button class="btn-sm btn-sm-danger" onclick="deleteDriver('${d.code}')">Eliminar</button>
+    </div>`).join('');
+}
+
+async function addDriver() {
+  const name=document.getElementById('new-driver-name').value.trim();
+  const code=document.getElementById('new-driver-code').value.trim();
+  const al=document.getElementById('cond-alert');
+  if(!name||!code){showAlert(al,'Rellena nombre y código',true);return;}
+  if(driversCache.find(d=>d.code===code)){showAlert(al,'Ese código ya existe',true);return;}
+  try {
+    await setDoc(doc(db,'conductores',code),{name,code});
+    driversCache.push({name,code});
+    document.getElementById('new-driver-name').value='';
+    document.getElementById('new-driver-code').value='';
+    renderDriverList();
+    showAlert(al,`✓ Conductor "${name}" añadido`,false);
+  } catch(e){showAlert(al,'Error al guardar',true);}
+}
+
+window.deleteDriver = async (code) => {
+  if(!confirm('¿Eliminar este conductor?')) return;
+  try { await deleteDoc(doc(db,'conductores',code)); driversCache=driversCache.filter(d=>d.code!==code); renderDriverList(); }
+  catch(e){alert('Error al eliminar');}
+};
+
+// ══════════════════════════════
+// UTILS
+// ══════════════════════════════
+function showAlert(el,msg,isError) {
+  el.textContent=msg; el.className='alert show'+(isError?' error':'');
+  setTimeout(()=>el.className='alert',4500);
+}
+
+// ARRANCAR
+initApp();
+</script>
+</body>
+</html>
