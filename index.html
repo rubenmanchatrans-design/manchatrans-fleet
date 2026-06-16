@@ -509,28 +509,49 @@ function renderMantenimiento() {
   });
   alertasEl.innerHTML=alertasHtml?`<div style="margin-bottom:1.25rem;">${alertasHtml}</div>`:'';
 
-  list.innerHTML=MATRICULAS.map(mat=>{
+  list.innerHTML=MATRICULAS.map((mat,idx)=>{
     const m=mantenimientoCache.find(x=>x.matricula===mat)||{matricula:mat};
-    return `<div class="card" style="margin-bottom:0.75rem;">
-      <div style="font-size:15px;font-weight:700;margin-bottom:0.75rem;">🚗 ${mat}</div>
-      ${REVISIONES.map(rev=>{
-        const key=revKey(rev);
-        const fechaStr=m[key];
-        const fecha=fechaStr?new Date(fechaStr):null;
-        const dias=fecha?Math.ceil((fecha-hoy)/(1000*60*60*24)):null;
-        let color='var(--text-muted)';
-        if(dias!==null){ if(dias<0) color='var(--danger)'; else if(dias<=DIAS_AVISO) color='var(--warning)'; else color='var(--success)'; }
-        return `<div class="mant-row">
-          <span style="font-weight:500;">${rev}</span>
-          <div style="display:flex;align-items:center;gap:0.5rem;">
-            <span style="color:${color};font-size:13px;">${fecha?fecha.toLocaleDateString('es-ES'):'Sin fecha'}</span>
-            <button class="btn-sm" onclick="editMant('${mat}','${rev}')">Editar</button>
-          </div>
-        </div>`;
-      }).join('')}
+    // Check if any revision has alert
+    let tieneAlerta = false;
+    REVISIONES.forEach(rev=>{ const key=revKey(rev); if(m[key]){ const dias=Math.ceil((new Date(m[key])-hoy)/(1000*60*60*24)); if(dias<=DIAS_AVISO) tieneAlerta=true; } });
+    const safeId = mat.replace(/[^a-zA-Z0-9]/g,'_');
+    return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius-sm);margin-bottom:0.5rem;overflow:hidden;">
+      <div onclick="toggleMant('${safeId}')" style="display:flex;justify-content:space-between;align-items:center;padding:0.85rem 1rem;cursor:pointer;">
+        <span style="font-size:14px;font-weight:600;">🚗 ${mat} ${tieneAlerta?'<span style="color:var(--danger);font-size:12px;">⚠️</span>':''}</span>
+        <span id="arrow-${safeId}" style="color:var(--text-muted);font-size:12px;">▼</span>
+      </div>
+      <div id="mant-body-${safeId}" style="display:none;padding:0 1rem 1rem 1rem;border-top:1px solid var(--card-border);">
+        ${REVISIONES.map(rev=>{
+          const key=revKey(rev);
+          const fechaStr=m[key];
+          const fecha=fechaStr?new Date(fechaStr):null;
+          const dias=fecha?Math.ceil((fecha-hoy)/(1000*60*60*24)):null;
+          let color='var(--text-muted)';
+          if(dias!==null){ if(dias<0) color='var(--danger)'; else if(dias<=DIAS_AVISO) color='var(--warning)'; else color='var(--success)'; }
+          return `<div class="mant-row">
+            <span style="font-weight:500;">${rev}</span>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span style="color:${color};font-size:13px;">${fecha?fecha.toLocaleDateString('es-ES'):'Sin fecha'}</span>
+              <button class="btn-sm" onclick="editMant('${mat}','${rev}')">Editar</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
     </div>`;
   }).join('');
 }
+
+window.toggleMant = (safeId) => {
+  const body = document.getElementById('mant-body-'+safeId);
+  const arrow = document.getElementById('arrow-'+safeId);
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    arrow.textContent = '▲';
+  } else {
+    body.style.display = 'none';
+    arrow.textContent = '▼';
+  }
+};
 
 window.editMant = (mat, rev) => {
   const m=mantenimientoCache.find(x=>x.matricula===mat)||{matricula:mat};
