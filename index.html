@@ -473,29 +473,54 @@ function renderIncidenciasAdmin() {
   const list=document.getElementById('admin-inc-list');
   let f=filtroActivo==='todas'?incidenciasCache:incidenciasCache.filter(i=>i.estado===filtroActivo);
   if (!f.length) { list.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div>No hay incidencias'+(filtroActivo!=='todas'?' con ese estado':'')+'</div>'; return; }
-  list.innerHTML=f.map(i=>`
-    <div class="record">
-      <div class="record-top">
-        <div style="font-weight:600;font-size:14px;">${i.driverName.split(' ').slice(0,2).join(' ')} <span class="badge">${i.driverCode}</span></div>
-        <span class="estado-badge estado-${i.estado==='Pendiente'?'pendiente':i.estado==='En reparación'?'reparacion':'resuelto'}">${i.estado}</span>
+  const estadoColor = {'Pendiente':'estado-pendiente','En reparación':'estado-reparacion','Resuelto':'estado-resuelto'};
+  list.innerHTML=f.map(i=>{
+    const safeId=i.id.replace(/[^a-zA-Z0-9]/g,'_');
+    return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius-sm);margin-bottom:0.5rem;overflow:hidden;">
+      <!-- CABECERA (siempre visible) -->
+      <div onclick="toggleInc('${safeId}')" style="display:flex;justify-content:space-between;align-items:center;padding:0.85rem 1rem;cursor:pointer;">
+        <div>
+          <div style="font-weight:600;font-size:14px;">${i.driverName.split(' ').slice(0,2).join(' ')} <span class="badge">${i.driverCode}</span> ${i.urgencia==='Urgente'?'<span style="color:var(--danger);font-size:12px;font-weight:700;">🔴</span>':''}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">🚗 ${i.matricula} · ${i.fechaStr}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span class="estado-badge ${estadoColor[i.estado]||''}">${i.estado}</span>
+          <span id="inc-arrow-${safeId}" style="color:var(--text-muted);font-size:12px;">▼</span>
+        </div>
       </div>
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:0.4rem;">🚗 ${i.matricula} · 📅 ${i.fechaStr} ${i.horaStr} ${i.urgencia==='Urgente'?'· <span style="color:var(--danger);font-weight:700;">🔴 URGENTE</span>':''}</div>
-      <div style="font-size:14px;margin-bottom:0.75rem;">${i.descripcion}</div>
-      <div style="display:flex;gap:0.4rem;">
-        <button onclick="cambiarEstado('${i.id}','Pendiente')" style="flex:1;padding:0.4rem;background:${i.estado==='Pendiente'?'var(--warning)':'var(--navy-light)'};color:${i.estado==='Pendiente'?'#111':'var(--text)'};border:1px solid var(--card-border);border-radius:var(--radius-sm);font-size:11px;cursor:pointer;">Pendiente</button>
-        <button onclick="cambiarEstado('${i.id}','En reparación')" style="flex:1;padding:0.4rem;background:${i.estado==='En reparación'?'var(--accent)':'var(--navy-light)'};color:${i.estado==='En reparación'?'#111':'var(--text)'};border:1px solid var(--card-border);border-radius:var(--radius-sm);font-size:11px;cursor:pointer;">En reparación</button>
-        <button onclick="cambiarEstado('${i.id}','Resuelto')" style="flex:1;padding:0.4rem;background:${i.estado==='Resuelto'?'var(--success)':'var(--navy-light)'};color:${i.estado==='Resuelto'?'#111':'var(--text)'};border:1px solid var(--card-border);border-radius:var(--radius-sm);font-size:11px;cursor:pointer;">Resuelto</button>
+      <!-- DETALLE (desplegable) -->
+      <div id="inc-body-${safeId}" style="display:none;padding:0 1rem 1rem 1rem;border-top:1px solid var(--card-border);">
+        <div style="font-size:14px;margin:0.75rem 0;line-height:1.5;">${i.descripcion}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:0.75rem;">📅 ${i.fechaStr} ${i.horaStr} ${i.urgencia==='Urgente'?'· <span style="color:var(--danger);font-weight:700;">URGENTE</span>':''}</div>
+        <div class="form-group" style="margin-bottom:0.75rem;">
+          <label class="form-label">Cambiar estado</label>
+          <select class="form-input" id="sel-estado-${safeId}" style="font-size:14px;padding:0.6rem;">
+            <option value="Pendiente" ${i.estado==='Pendiente'?'selected':''}>Pendiente</option>
+            <option value="En reparación" ${i.estado==='En reparación'?'selected':''}>En reparación</option>
+            <option value="Resuelto" ${i.estado==='Resuelto'?'selected':''}>Resuelto</option>
+          </select>
+        </div>
+        <button onclick="guardarEstado('${i.id}','${safeId}')" style="width:100%;padding:0.7rem;background:var(--accent);color:#111;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:700;cursor:pointer;">💾 Guardar estado</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
-window.cambiarEstado = async (id, estado) => {
+window.toggleInc = (safeId) => {
+  const body=document.getElementById('inc-body-'+safeId);
+  const arrow=document.getElementById('inc-arrow-'+safeId);
+  if(body.style.display==='none'){ body.style.display='block'; arrow.textContent='▲'; }
+  else { body.style.display='none'; arrow.textContent='▼'; }
+};
+
+window.guardarEstado = async (id, safeId) => {
+  const estado=document.getElementById('sel-estado-'+safeId).value;
   try {
     await updateDoc(doc(db,'incidencias',id),{estado});
     const idx=incidenciasCache.findIndex(x=>x.id===id);
     if(idx>=0) incidenciasCache[idx].estado=estado;
     renderIncidenciasAdmin(); updateTabBadges();
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { alert('Error al guardar: '+e.message); }
 };
 
 // ══════════════════════════════
