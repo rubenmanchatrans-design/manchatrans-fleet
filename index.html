@@ -132,9 +132,13 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         <button class="btn btn-primary" id="btn-guardar-hist">Guardar registro</button>
       </div>
       <div class="section-title">Historial de cambios</div>
-      <div class="form-group">
+      <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+        <button class="btn btn-secondary" id="btn-hist-todos" style="flex:1;padding:0.6rem;font-size:13px;">Ver todo</button>
+        <button class="btn btn-ghost" id="btn-hist-filtrar" style="flex:1;padding:0.6rem;font-size:13px;">Filtrar por vehículo</button>
+      </div>
+      <div class="form-group" id="hist-filter-wrapper" style="display:none;">
         <select class="form-input" id="hist-filter-mat" style="font-size:14px;padding:0.6rem;">
-          <option value="">Todos los vehículos</option>
+          <option value="">— Selecciona vehículo —</option>
         </select>
       </div>
       <div id="hist-list"></div>
@@ -266,6 +270,19 @@ async function initApp() {
   document.getElementById('btn-add-driver').addEventListener('click', addDriver);
   document.getElementById('btn-guardar-hist').addEventListener('click', guardarHistorial);
   document.getElementById('hist-filter-mat').addEventListener('change', (e)=>{ histFiltroMat=e.target.value; renderHistorial(); });
+  document.getElementById('btn-hist-todos').addEventListener('click', ()=>{
+    histFiltroMat='';
+    document.getElementById('hist-filter-wrapper').style.display='none';
+    document.getElementById('hist-filter-mat').value='';
+    document.getElementById('btn-hist-todos').className='btn btn-secondary';
+    document.getElementById('btn-hist-filtrar').className='btn btn-ghost';
+    renderHistorial();
+  });
+  document.getElementById('btn-hist-filtrar').addEventListener('click', ()=>{
+    document.getElementById('hist-filter-wrapper').style.display='block';
+    document.getElementById('btn-hist-todos').className='btn btn-ghost';
+    document.getElementById('btn-hist-filtrar').className='btn btn-secondary';
+  });
   document.getElementById('btn-ver-pendientes').addEventListener('click', verPendientesMes);
   populateHistMatriculas();
 
@@ -310,7 +327,7 @@ function populateHistMatriculas() {
   const sel = document.getElementById('hist-matricula');
   const selFilter = document.getElementById('hist-filter-mat');
   if (sel) { sel.innerHTML = '<option value="">— Selecciona vehículo —</option>'; MATRICULAS.forEach(m=>{ sel.innerHTML+=`<option value="${m}">${m}</option>`; }); }
-  if (selFilter) { selFilter.innerHTML = '<option value="">Todos los vehículos</option>'; MATRICULAS.forEach(m=>{ selFilter.innerHTML+=`<option value="${m}">${m}</option>`; }); }
+  if (selFilter) { selFilter.innerHTML = '<option value="">— Selecciona vehículo —</option>'; MATRICULAS.forEach(m=>{ selFilter.innerHTML+=`<option value="${m}">${m}</option>`; }); }
 }
 
 async function guardarHistorial() {
