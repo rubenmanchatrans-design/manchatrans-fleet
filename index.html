@@ -96,65 +96,9 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   <div class="login-logo"><div style="font-size:48px">🚛</div></div>
   <div class="login-company">MANCHATRANS S.L.</div>
   <div class="login-title">Fleet Manager</div>
-  <div class="login-sub">Incidencias y Mantenimiento</div>
+  <div class="login-sub">Historial y Mantenimiento</div>
   <div class="login-card"></div>
   <div style="margin-top:2rem;font-size:13px;color:var(--text-muted);text-align:center;opacity:0.8;">Diseñada por <span style="color:var(--accent);font-weight:600;">Rubén Díaz</span></div>
-</div>
-
-<!-- CONDUCTOR -->
-<div id="screen-driver" class="screen">
-  <div class="topbar">
-    <span class="topbar-title">🚛 Fleet Manager</span>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <span class="topbar-user" id="driver-name-display"></span>
-      <button class="topbar-logout" id="btn-logout-driver">Salir</button>
-    </div>
-  </div>
-  <div class="body-content">
-
-    <!-- TAB: Nueva incidencia -->
-    <div id="tab-nueva-inc" class="tab-pane active">
-      <div class="section-title">Nueva incidencia / avería</div>
-      <div id="inc-alert" class="alert"></div>
-      <div class="card">
-        <div class="form-group">
-          <label class="form-label">Vehículo <span style="color:var(--danger)">*</span></label>
-          <select class="form-input" id="inc-matricula">
-            <option value="">— Selecciona vehículo —</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Descripción del problema <span style="color:var(--danger)">*</span></label>
-          <textarea class="form-input" id="inc-desc" placeholder="Describe la avería o incidencia con el máximo detalle posible..."></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Urgencia</label>
-          <select class="form-input" id="inc-urgencia">
-            <option value="Normal">Normal</option>
-            <option value="Urgente">🔴 Urgente</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" id="btn-enviar-inc">Enviar incidencia</button>
-      </div>
-    </div>
-
-    <!-- TAB: Mis incidencias -->
-    <div id="tab-mis-inc" class="tab-pane">
-      <div class="section-title">Mis incidencias</div>
-      <div id="driver-inc-list"></div>
-    </div>
-
-  </div>
-  <div class="tabs">
-    <button class="tab-btn active" id="tbtn-nueva-inc">
-      <svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-      Nueva
-    </button>
-    <button class="tab-btn" id="tbtn-mis-inc">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 4v6M16 4v6"/></svg>
-      Mis incidencias
-    </button>
-  </div>
 </div>
 
 <!-- ADMIN -->
@@ -165,26 +109,41 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   </div>
   <div class="body-content">
     <div style="display:flex;gap:0.4rem;margin-bottom:1.25rem;flex-wrap:wrap;">
-      <button class="btn btn-secondary atab-btn" id="atab-btn-incidencias">Incidencias</button>
+      <button class="btn btn-secondary atab-btn" id="atab-btn-historial">Historial</button>
       <button class="btn btn-ghost atab-btn" id="atab-btn-mantenimiento">Mantenimiento</button>
       <button class="btn btn-ghost atab-btn" id="atab-btn-conductores">Conductores</button>
     </div>
 
-    <!-- INCIDENCIAS ADMIN -->
-    <div id="atab-incidencias" class="tab-pane active">
-      <div class="section-title">Todas las incidencias</div>
-      <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
-        <button class="btn btn-ghost" style="flex:1;padding:0.5rem;font-size:12px;" id="filter-todas" onclick="filtrarInc('todas')">Todas</button>
-        <button class="btn btn-ghost" style="flex:1;padding:0.5rem;font-size:12px;" id="filter-pendiente" onclick="filtrarInc('Pendiente')">Pendientes</button>
-        <button class="btn btn-ghost" style="flex:1;padding:0.5rem;font-size:12px;" id="filter-reparacion" onclick="filtrarInc('En reparación')">En reparación</button>
-        <button class="btn btn-ghost" style="flex:1;padding:0.5rem;font-size:12px;" id="filter-resuelto" onclick="filtrarInc('Resuelto')">Resueltas</button>
+    <!-- HISTORIAL DE CAMBIOS -->
+    <div id="atab-historial" class="tab-pane active">
+      <div class="section-title">Registrar cambio / reparación</div>
+      <div id="hist-alert" class="alert"></div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Vehículo <span style="color:var(--danger)">*</span></label>
+          <select class="form-input" id="hist-matricula">
+            <option value="">— Selecciona vehículo —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Comentarios <span style="color:var(--danger)">*</span></label>
+          <textarea class="form-input" id="hist-comentarios" placeholder="Describe el cambio o reparación realizada..."></textarea>
+        </div>
+        <button class="btn btn-primary" id="btn-guardar-hist">Guardar registro</button>
       </div>
-      <div id="admin-inc-list"></div>
+      <div class="section-title">Historial de cambios</div>
+      <div class="form-group">
+        <select class="form-input" id="hist-filter-mat" style="font-size:14px;padding:0.6rem;">
+          <option value="">Todos los vehículos</option>
+        </select>
+      </div>
+      <div id="hist-list"></div>
     </div>
 
     <!-- MANTENIMIENTO -->
     <div id="atab-mantenimiento" class="tab-pane">
-      <div class="section-title">Revisiones por vehículo</div>
+      <div class="section-title">ITV y Tacógrafo por vehículo</div>
+      <button class="btn btn-secondary" style="margin-bottom:1rem;" id="btn-ver-pendientes">📅 Ver pendientes este mes</button>
       <div id="mant-alertas"></div>
       <div id="mant-list"></div>
     </div>
@@ -233,7 +192,7 @@ const db = getFirestore(app);
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'admin2026';
 const DIAS_AVISO = 20;
-const REVISIONES = ['ITV','Seguro','Aceite','Neumáticos'];
+const REVISIONES = ['ITV','Tacógrafo'];
 
 const MATRICULAS = [
   '0044-HBJ','0328-MMR','0390-LWZ','0608-KFG','0620-MPR','0633-NGH',
@@ -268,11 +227,10 @@ const DEFAULT_DRIVERS = [
 ];
 
 let currentUser = null;
-let loginMode = 'driver';
 let driversCache = [];
-let incidenciasCache = [];
+let historialCache = [];
 let mantenimientoCache = [];
-let filtroActivo = 'todas';
+let histFiltroMat = '';
 
 // ══════════════════════════════
 // INIT
@@ -284,23 +242,10 @@ async function initApp() {
     const dSnap = await getDocs(collection(db,'conductores'));
     if (dSnap.empty) { for (const d of DEFAULT_DRIVERS) await setDoc(doc(db,'conductores',d.code),d); driversCache=[...DEFAULT_DRIVERS]; }
     else driversCache = dSnap.docs.map(d=>d.data());
-    const iSnap = await getDocs(query(collection(db,'incidencias'),orderBy('fecha','desc')));
-    incidenciasCache = iSnap.docs.map(d=>({id:d.id,...d.data()}));
 
-    // Si no hay incidencias, cargar simulacro de prueba
-    if (incidenciasCache.length === 0) {
-      const sim = [
-        {driverCode:'3035',driverName:'AGUSTIN CUESTA GUTIERREZ',matricula:'3402-NMD',descripcion:'El camión hace un ruido extraño al frenar, parece que son los frenos traseros.',urgencia:'Urgente',estado:'Pendiente',fecha:'2025-06-10T07:30:00',fechaStr:'10/06/2025',horaStr:'07:30'},
-        {driverCode:'3008',driverName:'ALBERTO BRIÑAS LOPEZ',matricula:'5271-KZT',descripcion:'La luz del salpicadero indica que falta aceite. Revisarlo antes de salir.',urgencia:'Normal',estado:'En reparación',fecha:'2025-06-11T09:15:00',fechaStr:'11/06/2025',horaStr:'09:15'},
-        {driverCode:'3010',driverName:'CRISTIAN SANCHEZ CONSUEGRA',matricula:'TOROS CESAB',descripcion:'La carretilla no eleva bien la carga, parece que falla el sistema hidráulico.',urgencia:'Urgente',estado:'Pendiente',fecha:'2025-06-12T08:00:00',fechaStr:'12/06/2025',horaStr:'08:00'},
-        {driverCode:'3004',driverName:'JUAN DE DIOS DIAZ OLIVER',matricula:'0608-KFG',descripcion:'Neumático trasero derecho con poca presión, necesita revisión.',urgencia:'Normal',estado:'Resuelto',fecha:'2025-06-09T14:30:00',fechaStr:'09/06/2025',horaStr:'14:30'},
-        {driverCode:'3007',driverName:'FERNANDO DIAZ ASTILLEROS',matricula:'8343-LXM',descripcion:'El aire acondicionado no funciona.',urgencia:'Normal',estado:'Pendiente',fecha:'2025-06-13T11:00:00',fechaStr:'13/06/2025',horaStr:'11:00'},
-      ];
-      for (const inc of sim) {
-        const ref = await addDoc(collection(db,'incidencias'), inc);
-        incidenciasCache.unshift({id:ref.id,...inc});
-      }
-    }
+    const hSnap = await getDocs(query(collection(db,'historial'),orderBy('fecha','desc')));
+    historialCache = hSnap.docs.map(d=>({id:d.id,...d.data()}));
+
     const mSnap = await getDocs(collection(db,'mantenimiento'));
     mantenimientoCache = mSnap.docs.map(d=>({id:d.id,...d.data()}));
     clearTimeout(t1); clearTimeout(t2);
@@ -314,214 +259,121 @@ async function initApp() {
   buildLoginForm(); showScreen('login');
 
   // Event listeners
-  document.getElementById('btn-logout-driver').addEventListener('click', doLogout);
   document.getElementById('btn-logout-admin').addEventListener('click', doLogout);
-  document.getElementById('tbtn-nueva-inc').addEventListener('click', ()=>switchDriverTab('nueva-inc'));
-  document.getElementById('tbtn-mis-inc').addEventListener('click', ()=>switchDriverTab('mis-inc'));
-  document.getElementById('btn-enviar-inc').addEventListener('click', submitIncidencia);
-  document.getElementById('atab-btn-incidencias').addEventListener('click', ()=>switchAdminTab('incidencias'));
+  document.getElementById('atab-btn-historial').addEventListener('click', ()=>switchAdminTab('historial'));
   document.getElementById('atab-btn-mantenimiento').addEventListener('click', ()=>switchAdminTab('mantenimiento'));
   document.getElementById('atab-btn-conductores').addEventListener('click', ()=>switchAdminTab('conductores'));
   document.getElementById('btn-add-driver').addEventListener('click', addDriver);
+  document.getElementById('btn-guardar-hist').addEventListener('click', guardarHistorial);
+  document.getElementById('hist-filter-mat').addEventListener('change', (e)=>{ histFiltroMat=e.target.value; renderHistorial(); });
+  document.getElementById('btn-ver-pendientes').addEventListener('click', verPendientesMes);
+  populateHistMatriculas();
+
+  // Comprobar si es día 1 del mes para mostrar alerta automática
+  if (new Date().getDate() === 1) {
+    setTimeout(()=>{ if(currentUser && currentUser.isAdmin) verPendientesMes(true); }, 500);
+  }
 }
 
 // ══════════════════════════════
-// LOGIN
+// LOGIN (solo admin)
 // ══════════════════════════════
 function buildLoginForm() {
   const card = document.querySelector('.login-card');
-  if (loginMode==='driver') {
-    card.innerHTML=`
-      <div class="form-group"><label class="form-label">Código de acceso</label>
-      <input class="form-input" type="text" id="login-code" placeholder="••••••" autocomplete="off" inputmode="numeric" style="-webkit-text-security:disc;"></div>
-      <button class="btn btn-primary" id="btn-login">Entrar</button>
-      <div style="text-align:center;margin-top:1rem;"><span style="font-size:13px;color:var(--text-muted);cursor:pointer;" id="link-admin">Acceso administrador</span></div>
-      <div class="error-msg" id="login-error"></div>`;
-    setTimeout(()=>{
-      const el=document.getElementById('login-code');
-      if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-      document.getElementById('btn-login').addEventListener('click',doLogin);
-      document.getElementById('link-admin').addEventListener('click',toggleLoginMode);
-    },50);
-  } else {
-    card.innerHTML=`
-      <div class="form-group"><label class="form-label">Usuario</label><input class="form-input" type="text" id="admin-user" placeholder="admin" autocomplete="off"></div>
-      <div class="form-group"><label class="form-label">Contraseña</label><input class="form-input" type="password" id="admin-pass" placeholder="••••••" autocomplete="off"></div>
-      <button class="btn btn-primary" id="btn-login-admin">Entrar como admin</button>
-      <div style="text-align:center;margin-top:1rem;"><span style="font-size:13px;color:var(--text-muted);cursor:pointer;" id="link-driver">← Acceso conductores</span></div>
-      <div class="error-msg" id="login-error"></div>`;
-    setTimeout(()=>{
-      document.getElementById('btn-login-admin').addEventListener('click',doLogin);
-      document.getElementById('link-driver').addEventListener('click',toggleLoginMode);
-      document.getElementById('admin-user').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-      document.getElementById('admin-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-    },50);
-  }
+  card.innerHTML=`
+    <div class="form-group"><label class="form-label">Usuario</label><input class="form-input" type="text" id="admin-user" placeholder="admin" autocomplete="off"></div>
+    <div class="form-group"><label class="form-label">Contraseña</label><input class="form-input" type="password" id="admin-pass" placeholder="••••••" autocomplete="off"></div>
+    <button class="btn btn-primary" id="btn-login-admin">Entrar</button>
+    <div class="error-msg" id="login-error"></div>`;
+  setTimeout(()=>{
+    document.getElementById('btn-login-admin').addEventListener('click',doLogin);
+    document.getElementById('admin-user').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+    document.getElementById('admin-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+  },50);
 }
-
-function toggleLoginMode() { loginMode=loginMode==='driver'?'admin':'driver'; buildLoginForm(); }
 
 function doLogin() {
   const err=document.getElementById('login-error');
-  if (loginMode==='admin') {
-    const u=(document.getElementById('admin-user').value||'').trim().toLowerCase();
-    const p=(document.getElementById('admin-pass').value||'').trim();
-    if (u===ADMIN_USER&&p===ADMIN_PASS) { currentUser={name:'Administrador',isAdmin:true}; showScreen('admin'); renderAdminPage(); return; }
-    err.textContent='Usuario o contraseña incorrectos'; return;
-  }
-  const code=(document.getElementById('login-code').value||'').trim();
-  if (!code) { err.textContent='Introduce tu código'; return; }
-  const driver=driversCache.find(d=>d.code===code);
-  if (driver) {
-    currentUser={name:driver.name,code:driver.code,isAdmin:false};
-    document.getElementById('driver-name-display').textContent=driver.name.split(' ').slice(0,2).join(' ');
-    showScreen('driver');
-    populateIncMatriculas();
-    switchDriverTab('nueva-inc');
-  } else { err.textContent='Código incorrecto. Contacta con tu jefe.'; }
+  const u=(document.getElementById('admin-user').value||'').trim().toLowerCase();
+  const p=(document.getElementById('admin-pass').value||'').trim();
+  if (u===ADMIN_USER&&p===ADMIN_PASS) { currentUser={name:'Administrador',isAdmin:true}; showScreen('admin'); renderAdminPage(); return; }
+  err.textContent='Usuario o contraseña incorrectos';
 }
 
 function doLogout() { location.reload(); }
 function showScreen(name) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-'+name).classList.add('active'); }
 
 // ══════════════════════════════
-// CONDUCTOR — INCIDENCIAS
+// HISTORIAL DE CAMBIOS
 // ══════════════════════════════
-function populateIncMatriculas() {
-  const sel=document.getElementById('inc-matricula');
-  sel.innerHTML='<option value="">— Selecciona vehículo —</option>';
-  // Matrículas personalizadas por conductor
-  if (currentUser.code==='3006') { sel.innerHTML+='<option value="8182-MFM">8182-MFM (vehículo propio)</option>'; return; }
-  if (currentUser.code==='3007') { sel.innerHTML+='<option value="8343-LXM">8343-LXM (vehículo propio)</option><option value="5340-CWZ">5340-CWZ (vehículo propio)</option>'; return; }
-  MATRICULAS.forEach(m=>{ sel.innerHTML+=`<option value="${m}">${m}</option>`; });
+function populateHistMatriculas() {
+  const sel = document.getElementById('hist-matricula');
+  const selFilter = document.getElementById('hist-filter-mat');
+  if (sel) { sel.innerHTML = '<option value="">— Selecciona vehículo —</option>'; MATRICULAS.forEach(m=>{ sel.innerHTML+=`<option value="${m}">${m}</option>`; }); }
+  if (selFilter) { selFilter.innerHTML = '<option value="">Todos los vehículos</option>'; MATRICULAS.forEach(m=>{ selFilter.innerHTML+=`<option value="${m}">${m}</option>`; }); }
 }
 
-function switchDriverTab(tab) {
-  document.querySelectorAll('#screen-driver .tab-pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('#screen-driver .tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  document.getElementById('tbtn-'+tab).classList.add('active');
-  if (tab==='mis-inc') renderDriverIncidencias();
-}
-
-async function submitIncidencia() {
-  const mat=document.getElementById('inc-matricula').value;
-  const desc=document.getElementById('inc-desc').value.trim();
-  const urgencia=document.getElementById('inc-urgencia').value;
-  const al=document.getElementById('inc-alert');
+async function guardarHistorial() {
+  const mat = document.getElementById('hist-matricula').value;
+  const comentarios = document.getElementById('hist-comentarios').value.trim();
+  const al = document.getElementById('hist-alert');
   if (!mat) { showAlert(al,'⚠️ Selecciona el vehículo',true); return; }
-  if (!desc) { showAlert(al,'⚠️ Describe el problema',true); return; }
-  const now=new Date();
-  const inc={ driverCode:currentUser.code, driverName:currentUser.name, matricula:mat, descripcion:desc, urgencia, estado:'Pendiente', fecha:now.toISOString(), fechaStr:now.toLocaleDateString('es-ES'), horaStr:now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) };
+  if (!comentarios) { showAlert(al,'⚠️ Escribe el comentario del cambio realizado',true); return; }
+  const now = new Date();
+  const registro = { matricula: mat, comentarios, fecha: now.toISOString(), fechaStr: now.toLocaleDateString('es-ES'), horaStr: now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) };
   try {
-    const ref=await addDoc(collection(db,'incidencias'),inc);
-    incidenciasCache.unshift({id:ref.id,...inc});
-    document.getElementById('inc-matricula').value='';
-    document.getElementById('inc-desc').value='';
-    document.getElementById('inc-urgencia').value='Normal';
-    showAlert(al,'✓ Incidencia enviada correctamente',false);
-  } catch(e) { showAlert(al,'Error al enviar: '+e.message,true); }
+    const ref = await addDoc(collection(db,'historial'), registro);
+    historialCache.unshift({id:ref.id,...registro});
+    document.getElementById('hist-matricula').value='';
+    document.getElementById('hist-comentarios').value='';
+    showAlert(al,'✓ Registro guardado correctamente',false);
+    renderHistorial();
+  } catch(e) { showAlert(al,'Error al guardar: '+e.message,true); }
 }
 
-function renderDriverIncidencias() {
-  const list=document.getElementById('driver-inc-list');
-  const mias=incidenciasCache.filter(i=>i.driverCode===currentUser.code);
-  if (!mias.length) { list.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div>No tienes incidencias registradas</div>'; return; }
-  list.innerHTML=mias.map(i=>`
+function renderHistorial() {
+  const list = document.getElementById('hist-list');
+  let f = histFiltroMat ? historialCache.filter(h=>h.matricula===histFiltroMat) : historialCache;
+  if (!f.length) { list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>No hay registros'+(histFiltroMat?' para este vehículo':'')+'</div>'; return; }
+  list.innerHTML = f.map(h=>`
     <div class="record">
       <div class="record-top">
-        <div style="font-weight:600;">🚗 ${i.matricula} ${i.urgencia==='Urgente'?'<span style="color:var(--danger);font-size:12px;">🔴 URGENTE</span>':''}</div>
-        <span class="estado-badge estado-${i.estado==='Pendiente'?'pendiente':i.estado==='En reparación'?'reparacion':'resuelto'}">${i.estado}</span>
+        <div style="font-weight:600;font-size:14px;">🚗 ${h.matricula}</div>
+        <button class="btn-sm btn-sm-danger" onclick="eliminarHistorial('${h.id}')">Eliminar</button>
       </div>
-      <div style="font-size:14px;margin-bottom:0.25rem;">${i.descripcion}</div>
-      <div class="record-meta"><span>📅 ${i.fechaStr} ${i.horaStr}</span></div>
+      <div style="font-size:14px;margin-bottom:0.4rem;line-height:1.4;">${h.comentarios}</div>
+      <div class="record-meta"><span>📅 ${h.fechaStr} ${h.horaStr}</span></div>
     </div>`).join('');
 }
+
+window.eliminarHistorial = async (id) => {
+  if (!confirm('¿Eliminar este registro del historial?')) return;
+  try {
+    await deleteDoc(doc(db,'historial',id));
+    historialCache = historialCache.filter(h=>h.id!==id);
+    renderHistorial();
+  } catch(e) { alert('Error: '+e.message); }
+};
 
 // ══════════════════════════════
 // ADMIN
 // ══════════════════════════════
-function renderAdminPage() { renderIncidenciasAdmin(); renderMantenimiento(); renderDriverList(); updateTabBadges(); }
+function renderAdminPage() { renderHistorial(); renderMantenimiento(); renderDriverList(); updateTabBadges(); }
 
 function switchAdminTab(tab) {
   document.querySelectorAll('#screen-admin .tab-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('atab-'+tab).classList.add('active');
-  ['incidencias','mantenimiento','conductores'].forEach(t=>{ document.getElementById('atab-btn-'+t).className='btn atab-btn '+(t===tab?'btn-secondary':'btn-ghost'); });
-  if (tab==='incidencias') renderIncidenciasAdmin();
+  ['historial','mantenimiento','conductores'].forEach(t=>{ document.getElementById('atab-btn-'+t).className='btn atab-btn '+(t===tab?'btn-secondary':'btn-ghost'); });
+  if (tab==='historial') renderHistorial();
   if (tab==='mantenimiento') renderMantenimiento();
   if (tab==='conductores') renderDriverList();
 }
 
 function updateTabBadges() {
-  const pendientes=incidenciasCache.filter(i=>i.estado==='Pendiente').length;
-  document.getElementById('atab-btn-incidencias').textContent=pendientes>0?`Incidencias 🔴${pendientes}`:'Incidencias';
   const hoy=new Date(); let alertas=0;
   mantenimientoCache.forEach(m=>{ REVISIONES.forEach(rev=>{ const key=revKey(rev); if(m[key]){ const dias=Math.ceil((new Date(m[key])-hoy)/(1000*60*60*24)); if(dias<=DIAS_AVISO) alertas++; } }); });
   document.getElementById('atab-btn-mantenimiento').textContent=alertas>0?`Mantenimiento 🔴${alertas}`:'Mantenimiento';
 }
-
-window.filtrarInc = (filtro) => {
-  filtroActivo=filtro;
-  ['todas','pendiente','reparacion','resuelto'].forEach(f=>{ document.getElementById('filter-'+f).className='btn btn-ghost'; document.getElementById('filter-'+f).style.cssText='flex:1;padding:0.5rem;font-size:12px;'; });
-  const btnId = filtro==='todas'?'filter-todas':filtro==='Pendiente'?'filter-pendiente':filtro==='En reparación'?'filter-reparacion':'filter-resuelto';
-  document.getElementById(btnId).className='btn btn-secondary';
-  document.getElementById(btnId).style.cssText='flex:1;padding:0.5rem;font-size:12px;';
-  renderIncidenciasAdmin();
-};
-
-function renderIncidenciasAdmin() {
-  const list=document.getElementById('admin-inc-list');
-  let f=filtroActivo==='todas'?incidenciasCache:incidenciasCache.filter(i=>i.estado===filtroActivo);
-  if (!f.length) { list.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div>No hay incidencias'+(filtroActivo!=='todas'?' con ese estado':'')+'</div>'; return; }
-  const estadoColor = {'Pendiente':'estado-pendiente','En reparación':'estado-reparacion','Resuelto':'estado-resuelto'};
-  list.innerHTML=f.map(i=>{
-    const safeId=i.id.replace(/[^a-zA-Z0-9]/g,'_');
-    return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius-sm);margin-bottom:0.5rem;overflow:hidden;">
-      <!-- CABECERA (siempre visible) -->
-      <div onclick="toggleInc('${safeId}')" style="display:flex;justify-content:space-between;align-items:center;padding:0.85rem 1rem;cursor:pointer;">
-        <div>
-          <div style="font-weight:600;font-size:14px;">${i.driverName.split(' ').slice(0,2).join(' ')} <span class="badge">${i.driverCode}</span> ${i.urgencia==='Urgente'?'<span style="color:var(--danger);font-size:12px;font-weight:700;">🔴</span>':''}</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">🚗 ${i.matricula} · ${i.fechaStr}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:0.5rem;">
-          <span class="estado-badge ${estadoColor[i.estado]||''}">${i.estado}</span>
-          <span id="inc-arrow-${safeId}" style="color:var(--text-muted);font-size:12px;">▼</span>
-        </div>
-      </div>
-      <!-- DETALLE (desplegable) -->
-      <div id="inc-body-${safeId}" style="display:none;padding:0 1rem 1rem 1rem;border-top:1px solid var(--card-border);">
-        <div style="font-size:14px;margin:0.75rem 0;line-height:1.5;">${i.descripcion}</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:0.75rem;">📅 ${i.fechaStr} ${i.horaStr} ${i.urgencia==='Urgente'?'· <span style="color:var(--danger);font-weight:700;">URGENTE</span>':''}</div>
-        <div class="form-group" style="margin-bottom:0.75rem;">
-          <label class="form-label">Cambiar estado</label>
-          <select class="form-input" id="sel-estado-${safeId}" style="font-size:14px;padding:0.6rem;">
-            <option value="Pendiente" ${i.estado==='Pendiente'?'selected':''}>Pendiente</option>
-            <option value="En reparación" ${i.estado==='En reparación'?'selected':''}>En reparación</option>
-            <option value="Resuelto" ${i.estado==='Resuelto'?'selected':''}>Resuelto</option>
-          </select>
-        </div>
-        <button onclick="guardarEstado('${i.id}','${safeId}')" style="width:100%;padding:0.7rem;background:var(--accent);color:#111;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:700;cursor:pointer;">💾 Guardar estado</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-window.toggleInc = (safeId) => {
-  const body=document.getElementById('inc-body-'+safeId);
-  const arrow=document.getElementById('inc-arrow-'+safeId);
-  if(body.style.display==='none'){ body.style.display='block'; arrow.textContent='▲'; }
-  else { body.style.display='none'; arrow.textContent='▼'; }
-};
-
-window.guardarEstado = async (id, safeId) => {
-  const estado=document.getElementById('sel-estado-'+safeId).value;
-  try {
-    await updateDoc(doc(db,'incidencias',id),{estado});
-    const idx=incidenciasCache.findIndex(x=>x.id===id);
-    if(idx>=0) incidenciasCache[idx].estado=estado;
-    renderIncidenciasAdmin(); updateTabBadges();
-  } catch(e) { alert('Error al guardar: '+e.message); }
-};
 
 // ══════════════════════════════
 // MANTENIMIENTO
@@ -563,17 +415,22 @@ function renderMantenimiento() {
       <div id="mant-body-${safeId}" style="display:none;padding:0 1rem 1rem 1rem;border-top:1px solid var(--card-border);">
         ${REVISIONES.map(rev=>{
           const key=revKey(rev);
+          const keyUltima=key+'_ultima';
           const fechaStr=m[key];
           const fecha=fechaStr?new Date(fechaStr):null;
+          const fechaUltimaStr=m[keyUltima];
           const dias=fecha?Math.ceil((fecha-hoy)/(1000*60*60*24)):null;
           let color='var(--text-muted)';
           if(dias!==null){ if(dias<0) color='var(--danger)'; else if(dias<=DIAS_AVISO) color='var(--warning)'; else color='var(--success)'; }
-          return `<div class="mant-row">
-            <span style="font-weight:500;">${rev}</span>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-              <span style="color:${color};font-size:13px;">${fecha?fecha.toLocaleDateString('es-ES'):'Sin fecha'}</span>
-              <button class="btn-sm" onclick="editMant('${mat}','${rev}')">Editar</button>
+          return `<div class="mant-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+            <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+              <span style="font-weight:500;">${rev}</span>
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <span style="color:${color};font-size:13px;">${fecha?fecha.toLocaleDateString('es-ES'):'Sin fecha'}</span>
+                <button class="btn-sm" onclick="editMant('${mat}','${rev}')">Editar</button>
+              </div>
             </div>
+            ${fechaUltimaStr?`<div style="font-size:11px;color:var(--text-muted);">Última vez: ${new Date(fechaUltimaStr).toLocaleDateString('es-ES')}</div>`:''}
           </div>`;
         }).join('')}
       </div>
@@ -593,16 +450,65 @@ window.toggleMant = (safeId) => {
   }
 };
 
+window.verPendientesMes = (esAutomatico) => {
+  const hoy = new Date();
+  const mesActual = hoy.getMonth();
+  const anioActual = hoy.getFullYear();
+  const nombreMes = hoy.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+
+  let pendientes = [];
+  mantenimientoCache.forEach(m => {
+    REVISIONES.forEach(rev => {
+      const key = revKey(rev);
+      if (!m[key]) return;
+      const fecha = new Date(m[key]);
+      if (fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual) {
+        pendientes.push({matricula: m.matricula, revision: rev, fecha});
+      }
+    });
+  });
+  pendientes.sort((a,b) => a.fecha - b.fecha);
+
+  const modal = document.createElement('div');
+  modal.id = 'pendientes-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:450px;margin:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <div style="font-size:17px;font-weight:700;color:var(--accent);">📅 Pendientes de ${nombreMes}</div>
+        <button onclick="document.getElementById('pendientes-modal').remove()" style="background:var(--navy-light);color:var(--text);border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;cursor:pointer;">✕</button>
+      </div>
+      ${pendientes.length === 0
+        ? '<div class="empty-state"><div class="empty-icon">✅</div>No hay ITV ni Tacógrafos que venzan este mes</div>'
+        : pendientes.map(p => {
+            const dias = Math.ceil((p.fecha - hoy)/(1000*60*60*24));
+            const color = dias < 0 ? 'var(--danger)' : dias <= 5 ? '#ff6b00' : 'var(--warning)';
+            const txt = dias < 0 ? `Vencida hace ${Math.abs(dias)} días` : dias === 0 ? 'Vence hoy' : `Vence en ${dias} días`;
+            return `<div style="background:var(--input-bg);border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;margin-bottom:0.5rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:600;font-size:14px;">🚗 ${p.matricula} — ${p.revision}</span>
+              </div>
+              <div style="font-size:13px;color:${color};font-weight:600;margin-top:4px;">${txt} (${p.fecha.toLocaleDateString('es-ES')})</div>
+            </div>`;
+          }).join('')
+      }
+    </div>`;
+  document.body.appendChild(modal);
+};
+
 window.editMant = (mat, rev) => {
   const m=mantenimientoCache.find(x=>x.matricula===mat)||{matricula:mat};
   const key=revKey(rev);
+  const keyUltima=key+'_ultima';
   const modal=document.createElement('div');
   modal.id='mant-modal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;padding:1rem;';
   modal.innerHTML=`
     <div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:380px;">
       <div style="font-size:16px;font-weight:700;margin-bottom:1.25rem;color:var(--accent);">🔧 ${rev} — ${mat}</div>
-      <div class="form-group"><label class="form-label">Fecha próxima revisión</label>
+      <div class="form-group"><label class="form-label">Última vez que se pasó</label>
+      <input class="form-input" type="date" id="mant-fecha-ultima" value="${m[keyUltima]||''}"></div>
+      <div class="form-group"><label class="form-label">Próxima fecha</label>
       <input class="form-input" type="date" id="mant-fecha" value="${m[key]||''}"></div>
       <div style="display:flex;gap:0.5rem;">
         <button id="btn-save-mant" style="flex:1;padding:0.75rem;background:var(--accent);color:#111;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:700;cursor:pointer;">Guardar</button>
@@ -612,11 +518,13 @@ window.editMant = (mat, rev) => {
   document.body.appendChild(modal);
   document.getElementById('btn-save-mant').addEventListener('click', async ()=>{
     const fecha=document.getElementById('mant-fecha').value;
-    if (!fecha) { alert('Selecciona una fecha'); return; }
+    const fechaUltima=document.getElementById('mant-fecha-ultima').value;
+    if (!fecha) { alert('Selecciona la próxima fecha'); return; }
     try {
       const idx=mantenimientoCache.findIndex(x=>x.matricula===mat);
-      if(idx>=0) { mantenimientoCache[idx][key]=fecha; await setDoc(doc(db,'mantenimiento',mat),mantenimientoCache[idx]); }
-      else { const nuevo={matricula:mat,[key]:fecha}; mantenimientoCache.push(nuevo); await setDoc(doc(db,'mantenimiento',mat),nuevo); }
+      const updates = {[key]:fecha, [keyUltima]:fechaUltima||null};
+      if(idx>=0) { Object.assign(mantenimientoCache[idx],updates); await setDoc(doc(db,'mantenimiento',mat),mantenimientoCache[idx]); }
+      else { const nuevo={matricula:mat,...updates}; mantenimientoCache.push(nuevo); await setDoc(doc(db,'mantenimiento',mat),nuevo); }
       document.getElementById('mant-modal').remove();
       renderMantenimiento(); updateTabBadges();
     } catch(e) { alert('Error: '+e.message); }
