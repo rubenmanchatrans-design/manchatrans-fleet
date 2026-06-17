@@ -215,7 +215,7 @@ const db = getFirestore(app);
 // ══════════════════════════════
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'admin2026';
-const DIAS_AVISO = 20;
+const DIAS_AVISO = 30;
 const REVISIONES = ['ITV','Tacógrafo'];
 
 const MATRICULAS = [
@@ -534,6 +534,7 @@ function renderMantenimiento() {
                 <button class="btn-sm" onclick="editMant('${mat}','${rev}')">Editar</button>
               </div>
             </div>
+            ${dias!==null?`<div style="font-size:12px;color:${color};font-weight:600;">${dias<0?`Vencida hace ${Math.abs(dias)} días`:dias===0?'Vence hoy':`Vence en ${dias} días`}</div>`:''}
             ${fechaUltimaStr?`<div style="font-size:11px;color:var(--text-muted);">Última vez: ${new Date(fechaUltimaStr).toLocaleDateString('es-ES')}</div>`:''}
           </div>`;
         }).join('')}
