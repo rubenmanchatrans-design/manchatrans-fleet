@@ -169,6 +169,9 @@ textarea.form-input { resize: vertical; min-height: 90px; }
       </div>
       <div class="section-title">Conductores activos (<span id="driver-count">0</span>)</div>
       <div id="driver-list"></div>
+      <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--card-border);">
+        <button class="btn btn-ghost" id="btn-cargar-sim" style="font-size:12px;">🧪 Cargar datos de prueba (simulacro)</button>
+      </div>
     </div>
 
   </div>
@@ -250,40 +253,8 @@ async function initApp() {
     const hSnap = await getDocs(query(collection(db,'historial'),orderBy('fecha','desc')));
     historialCache = hSnap.docs.map(d=>({id:d.id,...d.data()}));
 
-    // Simulacro de historial si está vacío
-    if (historialCache.length === 0) {
-      const simHist = [
-        {matricula:'3402-NMD', comentarios:'Cambio de pastillas de freno traseras. Hacían ruido al frenar.', fecha:'2025-06-10T09:00:00', fechaStr:'10/06/2025', horaStr:'09:00'},
-        {matricula:'5271-KZT', comentarios:'Cambio de aceite y filtro de aceite. Revisión de niveles general.', fecha:'2025-06-11T10:30:00', fechaStr:'11/06/2025', horaStr:'10:30'},
-        {matricula:'TOROS CESAB', comentarios:'Reparado el sistema hidráulico de elevación. Cambiada la bomba.', fecha:'2025-06-12T08:15:00', fechaStr:'12/06/2025', horaStr:'08:15'},
-        {matricula:'0608-KFG', comentarios:'Sustituidos los dos neumáticos traseros por desgaste irregular.', fecha:'2025-06-13T14:00:00', fechaStr:'13/06/2025', horaStr:'14:00'},
-        {matricula:'8343-LXM', comentarios:'Recarga de gas del aire acondicionado.', fecha:'2025-06-14T11:30:00', fechaStr:'14/06/2025', horaStr:'11:30'},
-      ];
-      for (const h of simHist) {
-        const ref = await addDoc(collection(db,'historial'), h);
-        historialCache.unshift({id:ref.id,...h});
-      }
-    }
-
     const mSnap = await getDocs(collection(db,'mantenimiento'));
     mantenimientoCache = mSnap.docs.map(d=>({id:d.id,...d.data()}));
-
-    // Simulacro de mantenimiento si está vacío
-    if (mantenimientoCache.length === 0) {
-      const hoy = new Date();
-      const enDias = (n) => { const d = new Date(hoy); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
-      const haceDias = (n) => { const d = new Date(hoy); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); };
-      const simMant = [
-        {matricula:'3402-NMD', itv: enDias(15), itv_ultima: haceDias(350), tacografo: enDias(200), tacografo_ultima: haceDias(165)},
-        {matricula:'5271-KZT', itv: enDias(-5), itv_ultima: haceDias(370), tacografo: enDias(45), tacografo_ultima: haceDias(320)},
-        {matricula:'0608-KFG', itv: enDias(60), itv_ultima: haceDias(305), tacografo: enDias(10), tacografo_ultima: haceDias(355)},
-        {matricula:'TOROS CESAB', itv: enDias(8), itv_ultima: haceDias(357), tacografo: null, tacografo_ultima: null},
-      ];
-      for (const m of simMant) {
-        await setDoc(doc(db,'mantenimiento',m.matricula), m);
-        mantenimientoCache.push(m);
-      }
-    }
 
     clearTimeout(t1); clearTimeout(t2);
   } catch(e) {
@@ -301,6 +272,7 @@ async function initApp() {
   document.getElementById('atab-btn-mantenimiento').addEventListener('click', ()=>switchAdminTab('mantenimiento'));
   document.getElementById('atab-btn-conductores').addEventListener('click', ()=>switchAdminTab('conductores'));
   document.getElementById('btn-add-driver').addEventListener('click', addDriver);
+  document.getElementById('btn-cargar-sim').addEventListener('click', cargarSimulacro);
   document.getElementById('btn-guardar-hist').addEventListener('click', guardarHistorial);
   document.getElementById('hist-filter-mat').addEventListener('change', (e)=>{ histFiltroMat=e.target.value; renderHistorial(); });
   document.getElementById('btn-hist-todos').addEventListener('click', ()=>{
@@ -692,6 +664,42 @@ window.deleteDriver = async (code) => {
 // ══════════════════════════════
 // UTILS
 // ══════════════════════════════
+async function cargarSimulacro() {
+  if (!confirm('Esto añadirá datos de prueba en Historial y Mantenimiento. ¿Continuar?')) return;
+  try {
+    if (historialCache.length === 0) {
+      const simHist = [
+        {matricula:'3402-NMD', comentarios:'Cambio de pastillas de freno traseras. Hacían ruido al frenar.', fecha:'2025-06-10T09:00:00', fechaStr:'10/06/2025', horaStr:'09:00'},
+        {matricula:'5271-KZT', comentarios:'Cambio de aceite y filtro de aceite. Revisión de niveles general.', fecha:'2025-06-11T10:30:00', fechaStr:'11/06/2025', horaStr:'10:30'},
+        {matricula:'0608-KFG', comentarios:'Sustituidos los dos neumáticos traseros por desgaste irregular.', fecha:'2025-06-13T14:00:00', fechaStr:'13/06/2025', horaStr:'14:00'},
+        {matricula:'8343-LXM', comentarios:'Recarga de gas del aire acondicionado.', fecha:'2025-06-14T11:30:00', fechaStr:'14/06/2025', horaStr:'11:30'},
+      ];
+      for (const h of simHist) {
+        const ref = await addDoc(collection(db,'historial'), h);
+        historialCache.unshift({id:ref.id,...h});
+      }
+    }
+    if (mantenimientoCache.length === 0) {
+      const hoy = new Date();
+      const enDias = (n) => { const d = new Date(hoy); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+      const haceDias = (n) => { const d = new Date(hoy); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); };
+      const simMant = [
+        {matricula:'3402-NMD', itv: enDias(15), itv_ultima: haceDias(350), tacografo: enDias(200), tacografo_ultima: haceDias(165)},
+        {matricula:'5271-KZT', itv: enDias(-5), itv_ultima: haceDias(370), tacografo: enDias(45), tacografo_ultima: haceDias(320)},
+        {matricula:'0608-KFG', itv: enDias(60), itv_ultima: haceDias(305), tacografo: enDias(10), tacografo_ultima: haceDias(355)},
+      ];
+      for (const m of simMant) {
+        await setDoc(doc(db,'mantenimiento',m.matricula), m);
+        mantenimientoCache.push(m);
+      }
+    }
+    renderHistorial(); renderMantenimiento(); updateTabBadges();
+    alert('✓ Datos de prueba cargados correctamente');
+  } catch(e) {
+    alert('Error al cargar simulacro: '+e.message);
+  }
+}
+
 function showAlert(el,msg,isError) {
   el.textContent=msg; el.className='alert show'+(isError?' error':'');
   setTimeout(()=>el.className='alert',4500);
