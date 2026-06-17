@@ -147,9 +147,26 @@ textarea.form-input { resize: vertical; min-height: 90px; }
     <!-- MANTENIMIENTO -->
     <div id="atab-mantenimiento" class="tab-pane">
       <div class="section-title">ITV y Tacógrafo por vehículo</div>
-      <button class="btn btn-secondary" style="margin-bottom:1rem;" id="btn-ver-pendientes">📅 Ver pendientes este mes</button>
+      <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+        <button class="btn btn-secondary" style="flex:1;font-size:13px;" id="btn-ver-pendientes">📅 Pendientes mes</button>
+        <button class="btn btn-ghost" style="flex:1;font-size:13px;" id="btn-ver-hist-mant">📋 Historial</button>
+      </div>
       <div id="mant-alertas"></div>
       <div id="mant-list"></div>
+    </div>
+
+    <!-- HISTORIAL DE MANTENIMIENTO -->
+    <div id="atab-hist-mant" class="tab-pane">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div class="section-title" style="margin-bottom:0;">Historial de mantenimiento</div>
+        <button class="btn-sm" id="btn-volver-mant">← Volver</button>
+      </div>
+      <div class="form-group">
+        <select class="form-input" id="hist-mant-filter-mat" style="font-size:14px;padding:0.6rem;">
+          <option value="">Todos los vehículos</option>
+        </select>
+      </div>
+      <div id="hist-mant-list"></div>
     </div>
 
     <!-- CONDUCTORES -->
@@ -237,7 +254,9 @@ let currentUser = null;
 let driversCache = [];
 let historialCache = [];
 let mantenimientoCache = [];
+let historialMantCache = [];
 let histFiltroMat = '';
+let histMantFiltroMat = '';
 
 // ══════════════════════════════
 // INIT
@@ -255,6 +274,9 @@ async function initApp() {
 
     const mSnap = await getDocs(collection(db,'mantenimiento'));
     mantenimientoCache = mSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+    const hmSnap = await getDocs(query(collection(db,'historialMantenimiento'),orderBy('fecha','desc')));
+    historialMantCache = hmSnap.docs.map(d=>({id:d.id,...d.data()}));
 
     clearTimeout(t1); clearTimeout(t2);
   } catch(e) {
@@ -289,6 +311,17 @@ async function initApp() {
     document.getElementById('btn-hist-filtrar').className='btn btn-secondary';
   });
   document.getElementById('btn-ver-pendientes').addEventListener('click', verPendientesMes);
+  document.getElementById('btn-ver-hist-mant').addEventListener('click', ()=>{
+    document.querySelectorAll('#screen-admin .tab-pane').forEach(p=>p.classList.remove('active'));
+    document.getElementById('atab-hist-mant').classList.add('active');
+    populateHistMantMatriculas();
+    renderHistorialMant();
+  });
+  document.getElementById('btn-volver-mant').addEventListener('click', ()=>{
+    document.querySelectorAll('#screen-admin .tab-pane').forEach(p=>p.classList.remove('active'));
+    document.getElementById('atab-mantenimiento').classList.add('active');
+  });
+  document.getElementById('hist-mant-filter-mat').addEventListener('change', (e)=>{ histMantFiltroMat=e.target.value; renderHistorialMant(); });
   populateHistMatriculas();
 
   // Comprobar si es día 1 del mes para mostrar alerta automática
@@ -495,7 +528,7 @@ function renderMantenimiento() {
           if(dias!==null){ if(dias<0) color='var(--danger)'; else if(dias<=DIAS_AVISO) color='var(--warning)'; else color='var(--success)'; }
           return `<div class="mant-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
             <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
-              <span style="font-weight:500;">${rev}</span>
+              <span style="font-weight:500;">${rev} ${dias!==null && dias<=DIAS_AVISO?`<span style="background:${color};color:#111;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:4px;">${dias<0?'VENCIDA':'PRÓXIMA'}</span>`:''}</span>
               <div style="display:flex;align-items:center;gap:0.5rem;">
                 <span style="color:${color};font-size:13px;">${fecha?fecha.toLocaleDateString('es-ES'):'Sin fecha'}</span>
                 <button class="btn-sm" onclick="editMant('${mat}','${rev}')">Editar</button>
@@ -590,6 +623,27 @@ function renderPendientesList(tipo) {
       }).join('');
 }
 
+function populateHistMantMatriculas() {
+  const sel = document.getElementById('hist-mant-filter-mat');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Todos los vehículos</option>';
+  MATRICULAS.forEach(m=>{ sel.innerHTML+=`<option value="${m}">${m}</option>`; });
+}
+
+function renderHistorialMant() {
+  const list = document.getElementById('hist-mant-list');
+  let f = histMantFiltroMat ? historialMantCache.filter(h=>h.matricula===histMantFiltroMat) : historialMantCache;
+  if (!f.length) { list.innerHTML='<div class="empty-state"><div class="empty-icon">🔧</div>No hay renovaciones registradas'+(histMantFiltroMat?' para este vehículo':'')+'</div>'; return; }
+  list.innerHTML = f.map(h=>`
+    <div class="record">
+      <div class="record-top">
+        <div style="font-weight:600;font-size:14px;">🚗 ${h.matricula} — ${h.revision}</div>
+      </div>
+      <div style="font-size:14px;margin-bottom:0.4rem;">✓ ${h.descripcion}</div>
+      <div class="record-meta"><span>📅 Registrado el ${h.fechaStr} ${h.horaStr}</span></div>
+    </div>`).join('');
+}
+
 window.editMant = (mat, rev) => {
   const m=mantenimientoCache.find(x=>x.matricula===mat)||{matricula:mat};
   const key=revKey(rev);
@@ -608,20 +662,35 @@ window.editMant = (mat, rev) => {
         <button id="btn-save-mant" style="flex:1;padding:0.75rem;background:var(--accent);color:#111;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:700;cursor:pointer;">Guardar</button>
         <button onclick="document.getElementById('mant-modal').remove()" style="flex:1;padding:0.75rem;background:var(--navy-light);color:var(--text);border:1px solid var(--card-border);border-radius:var(--radius-sm);font-size:15px;cursor:pointer;">Cancelar</button>
       </div>
+      <div id="mant-modal-alert" class="alert" style="margin-top:0.75rem;"></div>
     </div>`;
   document.body.appendChild(modal);
   document.getElementById('btn-save-mant').addEventListener('click', async ()=>{
     const fecha=document.getElementById('mant-fecha').value;
     const fechaUltima=document.getElementById('mant-fecha-ultima').value;
-    if (!fecha) { alert('Selecciona la próxima fecha'); return; }
+    const al=document.getElementById('mant-modal-alert');
+    if (!fecha) { showAlert(al,'Selecciona la próxima fecha',true); return; }
     try {
+      const fechaAnterior = m[key]; // fecha que tenía antes de editar
       const idx=mantenimientoCache.findIndex(x=>x.matricula===mat);
       const updates = {[key]:fecha, [keyUltima]:fechaUltima||null};
       if(idx>=0) { Object.assign(mantenimientoCache[idx],updates); await setDoc(doc(db,'mantenimiento',mat),mantenimientoCache[idx]); }
       else { const nuevo={matricula:mat,...updates}; mantenimientoCache.push(nuevo); await setDoc(doc(db,'mantenimiento',mat),nuevo); }
+
+      // Si la fecha cambió respecto a la anterior, registrar en historial de mantenimiento
+      if (fecha !== fechaAnterior) {
+        const now = new Date();
+        const descripcion = fechaAnterior
+          ? `${rev} renovada. Próxima revisión: ${new Date(fecha).toLocaleDateString('es-ES')}`
+          : `${rev} registrada por primera vez. Próxima revisión: ${new Date(fecha).toLocaleDateString('es-ES')}`;
+        const registro = { matricula: mat, revision: rev, descripcion, fecha: now.toISOString(), fechaStr: now.toLocaleDateString('es-ES'), horaStr: now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) };
+        const ref = await addDoc(collection(db,'historialMantenimiento'), registro);
+        historialMantCache.unshift({id:ref.id,...registro});
+      }
+
       document.getElementById('mant-modal').remove();
       renderMantenimiento(); updateTabBadges();
-    } catch(e) { alert('Error: '+e.message); }
+    } catch(e) { showAlert(al,'Error: '+e.message,true); }
   });
 };
 
